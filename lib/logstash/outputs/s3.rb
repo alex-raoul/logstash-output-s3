@@ -119,6 +119,9 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   #
   config :tags, :validate => :array, :default => []
 
+  # Add alternative s3 endpoint, for ceph or swift "S3 api"
+  config :s3_endpoint, :validate => :string, :default => nil
+
   # Exposed attributes for testing purpose.
   attr_accessor :tempfile
   attr_reader :page_counter
@@ -130,6 +133,13 @@ class LogStash::Outputs::S3 < LogStash::Outputs::Base
   end
 
   def aws_service_endpoint(region)
+    # If you provide an endpoint, you won't have "region" lookup
+    if @s3_endpoint
+      return {
+        :s3_endpoint => @s3_endpoint,
+      }
+    end
+
     # Make the deprecated endpoint_region work
     # TODO: (ph) Remove this after deprecation.
 

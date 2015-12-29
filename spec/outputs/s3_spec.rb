@@ -33,6 +33,20 @@ describe LogStash::Outputs::S3 do
     end
   end
 
+  describe "configuration with alternate endpoint" do
+    let!(:config) { { "s3_endpoint" => "custom-s3.acme.local" } }
+
+    it "should support s3_endpoint" do
+      s3 = LogStash::Outputs::S3.new(config)
+      expect(s3.aws_options_hash[:s3_endpoint]).to eq("custom-s3.acme.local")
+    end
+
+    it "should fallback to default endpoint" do
+      s3 = LogStash::Outputs::S3.new(minimal_settings)
+      expect(s3.aws_options_hash).to include(:s3_endpoint => "s3.amazonaws.com")
+    end
+  end
+
   describe "#register" do
     it "should create the tmp directory if it doesn't exist" do
       temporary_directory = Stud::Temporary.pathname("temporary_directory")
@@ -194,7 +208,7 @@ describe LogStash::Outputs::S3 do
 
       after(:each) do
         s3.close
-        tmp.close 
+        tmp.close
         tmp.unlink
       end
 
